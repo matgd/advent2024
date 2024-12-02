@@ -1,5 +1,5 @@
 const std = @import("std");
-const input = @embedFile("tinput.txt");
+const input = @embedFile("input.txt");
 const print = std.debug.print;
 const allocator = std.heap.page_allocator;
 
@@ -51,90 +51,26 @@ fn lineSafe(line: std.ArrayList(i32)) bool {
     return true;
 }
 
-fn lineSafePart2(line: std.ArrayList(i32), found_error: bool) bool {
-    var l: ?i32 = null;
-    var r: ?i32 = null;
-    var ascending = false;
-    var descending = false;
+fn lineSafePart2(line: std.ArrayList(i32)) !bool {
+    if (lineSafe(line)) {
+        return true;
+    }
 
-    print("line.items: {any}\n", .{line.items});
-
-    for (line.items, 0..) |number, i| {
-        l = r;
-        r = number;
-
-        if (l == null or r == null) {
-            continue;
+    for (0..line.items.len) |i| {
+        var curr = std.ArrayList(i32).init(allocator);
+        defer curr.deinit();
+        for (0..line.items.len) |j| {
+            if (i == j) {
+                continue;
+            }
+            try curr.append(line.items[j]);
         }
-
-        if (l.? - r.? > 0) {
-            descending = true;
-        } else if (l.? - r.? < 0) {
-            ascending = true;
-        } else {
-            if (found_error) {
-                return false;
-            }
-            var listc = std.ArrayList(i32, allocator);
-            var listcc = std.ArrayList(i32, allocator);
-            for (line.items, 0..) |n, j| {
-                if (j == i - 1) {
-                    continue;
-                }
-                _ = listc.append(n);
-            }
-            for (line.items, 0..) |n, j| {
-                if (j == i) {
-                    continue;
-                }
-                _ = listcc.append(n);
-            }
-            return lineSafePart2(listc, true) or lineSafePart2(listcc, true);
-        }
-
-        if (ascending and descending) {
-            if (found_error) {
-                return false;
-            }
-            var listc = std.ArrayList(i32, allocator);
-            var listcc = std.ArrayList(i32, allocator);
-            for (line.items, 0..) |n, j| {
-                if (j == i - 1) {
-                    continue;
-                }
-                _ = listc.append(n);
-            }
-            for (line.items, 0..) |n, j| {
-                if (j == i) {
-                    continue;
-                }
-                _ = listcc.append(n);
-            }
-            return lineSafePart2(listc, true) or lineSafePart2(listcc, true);
-        }
-
-        if (ascending and !safeIncrease(l.?, r.?)) {
-            if (found_error) {
-                return false;
-            }
-            var listc = line.clone();
-            var listcc = line.clone();
-            _ = listc.orderedRemove(i - 1);
-            _ = listcc.orderedRemove(i);
-            return lineSafePart2(listc, true) or lineSafePart2(listcc, true);
-        } else if (descending and !safeDecrease(l.?, r.?)) {
-            if (found_error) {
-                return false;
-            }
-            var listc = line.clone();
-            var listcc = line.clone();
-            _ = try listc.orderedRemove(i - 1);
-            _ = listcc.orderedRemove(i);
-            return lineSafePart2(listc, true) or lineSafePart2(listcc, true);
+        if (lineSafe(curr)) {
+            return true;
         }
     }
 
-    return true;
+    return false;
 }
 
 pub fn main() !void {
@@ -156,7 +92,7 @@ pub fn main() !void {
     var safe_sum_part2: u16 = 0;
     for (number_lines.items) |line| {
         safe_sum += if (lineSafe(line)) 1 else 0;
-        safe_sum_part2 += if (lineSafePart2(line, false)) 1 else 0;
+        safe_sum_part2 += if (try lineSafePart2(line)) 1 else 0;
     }
     print("Part 1, safe sum: {}\n", .{safe_sum});
     print("Part 2, safe sum: {}\n", .{safe_sum_part2});
