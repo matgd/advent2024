@@ -1,5 +1,5 @@
 const std = @import("std");
-const input = @embedFile("input.txt");
+const input = @embedFile("tinput.txt");
 const print = std.debug.print;
 const allocator = std.heap.page_allocator;
 
@@ -51,16 +51,15 @@ fn lineSafe(line: std.ArrayList(i32)) bool {
     return true;
 }
 
-fn lineSafePart2(line: std.ArrayList(i32)) bool {
+fn lineSafePart2(line: std.ArrayList(i32), found_error: bool) bool {
     var l: ?i32 = null;
     var r: ?i32 = null;
     var ascending = false;
     var descending = false;
-    var unsafe_found = false;
+
+    print("line.items: {any}\n", .{line.items});
 
     for (line.items, 0..) |number, i| {
-        var currently_descending = false;
-        var currently_ascending = false;
         l = r;
         r = number;
 
@@ -70,54 +69,68 @@ fn lineSafePart2(line: std.ArrayList(i32)) bool {
 
         if (l.? - r.? > 0) {
             descending = true;
-            currently_descending = true;
         } else if (l.? - r.? < 0) {
             ascending = true;
-            currently_ascending = true;
         } else {
-            if (unsafe_found) {
+            if (found_error) {
                 return false;
             }
-            unsafe_found = true;
-            if (i != 1) {
-                r = l;
+            var listc = std.ArrayList(i32, allocator);
+            var listcc = std.ArrayList(i32, allocator);
+            for (line.items, 0..) |n, j| {
+                if (j == i - 1) {
+                    continue;
+                }
+                _ = listc.append(n);
             }
-            continue;
+            for (line.items, 0..) |n, j| {
+                if (j == i) {
+                    continue;
+                }
+                _ = listcc.append(n);
+            }
+            return lineSafePart2(listc, true) or lineSafePart2(listcc, true);
         }
 
         if (ascending and descending) {
-            if (unsafe_found) {
+            if (found_error) {
                 return false;
             }
-            if (ascending and currently_descending) {
-                descending = false;
+            var listc = std.ArrayList(i32, allocator);
+            var listcc = std.ArrayList(i32, allocator);
+            for (line.items, 0..) |n, j| {
+                if (j == i - 1) {
+                    continue;
+                }
+                _ = listc.append(n);
             }
-            if (descending and currently_ascending) {
-                ascending = false;
+            for (line.items, 0..) |n, j| {
+                if (j == i) {
+                    continue;
+                }
+                _ = listcc.append(n);
             }
-            unsafe_found = true;
-            if (i != 1) {
-                r = l;
-            }
-            continue;
+            return lineSafePart2(listc, true) or lineSafePart2(listcc, true);
         }
 
         if (ascending and !safeIncrease(l.?, r.?)) {
-            if (unsafe_found) {
+            if (found_error) {
                 return false;
             }
-            unsafe_found = true;
-            if (i != 1) {
-                r = l;
-            }
+            var listc = line.clone();
+            var listcc = line.clone();
+            _ = listc.orderedRemove(i - 1);
+            _ = listcc.orderedRemove(i);
+            return lineSafePart2(listc, true) or lineSafePart2(listcc, true);
         } else if (descending and !safeDecrease(l.?, r.?)) {
-            if (unsafe_found) {
+            if (found_error) {
                 return false;
             }
-            unsafe_found = true;
-            if (i != 1) {
-                r = l;
-            }
+            var listc = line.clone();
+            var listcc = line.clone();
+            _ = try listc.orderedRemove(i - 1);
+            _ = listcc.orderedRemove(i);
+            return lineSafePart2(listc, true) or lineSafePart2(listcc, true);
         }
     }
 
@@ -143,7 +156,7 @@ pub fn main() !void {
     var safe_sum_part2: u16 = 0;
     for (number_lines.items) |line| {
         safe_sum += if (lineSafe(line)) 1 else 0;
-        safe_sum_part2 += if (lineSafePart2(line)) 1 else 0;
+        safe_sum_part2 += if (lineSafePart2(line, false)) 1 else 0;
     }
     print("Part 1, safe sum: {}\n", .{safe_sum});
     print("Part 2, safe sum: {}\n", .{safe_sum_part2});
