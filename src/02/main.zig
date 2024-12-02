@@ -3,14 +3,6 @@ const input = @embedFile("input.txt");
 const print = std.debug.print;
 const allocator = std.heap.page_allocator;
 
-fn part1(number_lines: std.ArrayList(std.ArrayList(i32))) void {
-    var safe_sum: u16 = 0;
-    for (number_lines.items) |line| {
-        safe_sum += if (lineSafe(line)) 1 else 0;
-    }
-    print("Part 1, safe sum: {}\n", .{safe_sum});
-}
-
 inline fn safeIncrease(lower: i32, higher: i32) bool {
     return higher - lower >= 1 and higher - lower <= 3;
 }
@@ -59,6 +51,79 @@ fn lineSafe(line: std.ArrayList(i32)) bool {
     return true;
 }
 
+fn lineSafePart2(line: std.ArrayList(i32)) bool {
+    var l: ?i32 = null;
+    var r: ?i32 = null;
+    var ascending = false;
+    var descending = false;
+    var unsafe_found = false;
+
+    for (line.items, 0..) |number, i| {
+        var currently_descending = false;
+        var currently_ascending = false;
+        l = r;
+        r = number;
+
+        if (l == null or r == null) {
+            continue;
+        }
+
+        if (l.? - r.? > 0) {
+            descending = true;
+            currently_descending = true;
+        } else if (l.? - r.? < 0) {
+            ascending = true;
+            currently_ascending = true;
+        } else {
+            if (unsafe_found) {
+                return false;
+            }
+            unsafe_found = true;
+            if (i != 1) {
+                r = l;
+            }
+            continue;
+        }
+
+        if (ascending and descending) {
+            if (unsafe_found) {
+                return false;
+            }
+            if (ascending and currently_descending) {
+                descending = false;
+            }
+            if (descending and currently_ascending) {
+                ascending = false;
+            }
+            unsafe_found = true;
+            if (i != 1) {
+                r = l;
+            }
+            continue;
+        }
+
+        if (ascending and !safeIncrease(l.?, r.?)) {
+            if (unsafe_found) {
+                return false;
+            }
+            unsafe_found = true;
+            if (i != 1) {
+                r = l;
+            }
+        } else if (descending and !safeDecrease(l.?, r.?)) {
+            if (unsafe_found) {
+                return false;
+            }
+            unsafe_found = true;
+            if (i != 1) {
+                r = l;
+            }
+        }
+    }
+
+    return true;
+}
+
 pub fn main() !void {
     var lines = std.mem.splitSequence(u8, std.mem.trim(u8, input, "\n"), "\n");
 
@@ -72,14 +137,18 @@ pub fn main() !void {
         }
         try number_lines.append(numbers);
     }
+    defer number_lines.deinit();
 
-    part1(number_lines);
+    var safe_sum: u16 = 0;
+    var safe_sum_part2: u16 = 0;
+    for (number_lines.items) |line| {
+        safe_sum += if (lineSafe(line)) 1 else 0;
+        safe_sum_part2 += if (lineSafePart2(line)) 1 else 0;
+    }
+    print("Part 1, safe sum: {}\n", .{safe_sum});
+    print("Part 2, safe sum: {}\n", .{safe_sum_part2});
 
-    // print arraylist
-    // for (number_lines.items) |line| {
-    //     for (line.items) |number| {
-    //         print("{}, ", .{number});
-    //     }
-    //     print("\n", .{});
-    // }
+    for (number_lines.items) |line| {
+        line.deinit();
+    }
 }
