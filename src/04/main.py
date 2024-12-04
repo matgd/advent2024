@@ -27,15 +27,15 @@
 
 # print("".join(oneline))
 
-import sys
-from itertools import zip_longest
-lines = sys.stdin.readlines()
-for i in range(len(lines)):
-    lines[i] = i * " " + lines[i]
-for l in list(zip_longest(*lines, fillvalue="")):
-    ln = "".join(l)
-    ln = ln.replace("\n" ,"")
-    print(ln.strip())
+# import sys
+# from itertools import zip_longest
+# lines = sys.stdin.readlines()
+# for i in range(len(lines)):
+#     lines[i] = i * " " + lines[i]
+# for l in list(zip_longest(*lines, fillvalue="")):
+#     ln = "".join(l)
+#     ln = ln.replace("\n" ,"")
+#     print(ln.strip())
 
 # import sys
 # from itertools import zip_longest
@@ -43,4 +43,24 @@ for l in list(zip_longest(*lines, fillvalue="")):
 # for i in range(len(lines)):
 #     lines[i] = (len(lines) - i) * " " + lines[i]
 # for l in list(zip_longest(*lines, fillvalue="")):
-#     print("".join(l))
+#      ln = "".join(l)
+#      ln = ln.replace("\n" ,"")
+#      print(ln.strip())
+
+
+import sys
+lines = sys.stdin.readlines()
+counter = 0
+valid_strs = ("MAS", "SAM")
+for i in range(1, len(lines) - 1):
+    for j in range(1, len(lines) - 1):
+        ul = lines[i-1][j-1]
+        c = lines[i][j]
+        lr = lines[i+1][j+1]
+        ur = lines[i-1][j+1]
+        ll = lines[i+1][j-1]
+        _1 = f"{ul}{c}{lr}"
+        _2 = f"{ur}{c}{ll}"
+        if _1 in valid_strs and _2 in valid_strs:
+            counter += 1
+print(counter)
