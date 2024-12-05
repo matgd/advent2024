@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-const FILENAME = "tinput.txt"
+const FILENAME = "input.txt"
 
 type intSet map[int]struct{}
 type intIntSetMap map[int]intSet
@@ -64,7 +64,7 @@ func main() {
 		}
 	}
 	part1(rules, pageUpdates)
-	// part2(rules, pageUpdates)
+	part2(rules, pageUpdates)
 }
 
 func orderIsValid(order []int, rules intIntSetMap) (valid bool, invalidIndex int) {
@@ -88,32 +88,34 @@ func part1(rules intIntSetMap, pageUpdates [][]int) {
 	for _, vi := range validIndexes {
 		sum += pageUpdates[vi][len(pageUpdates[vi])/2]
 	}
-	fmt.Println("Part 1:", sum)
+	fmt.Println("Part 1:", sum) // 5452
 }
 
-func fixWithBubble(invalidOrder []int) (validOrder []int) {
-	newOrder := make([]int, 0, 32)
-	copy(newOrder, invalidOrder)
+func fixWithBubble(order []int, rules intIntSetMap) (validOrder []int) {
+	newOrder := make([]int, len(order))
+	copy(newOrder, order)
+	for true {
+		ok, i := orderIsValid(newOrder, rules)
+		if ok {
+			return newOrder
+		}
+		newOrder[i], newOrder[i-1] = newOrder[i-1], newOrder[i]
+	}
 	return newOrder
 }
 
 func part2(rules intIntSetMap, pageUpdates [][]int) {
-	// validIndexes := make([]int, 0, 100)
-	for _, pageUpdate := range pageUpdates {
-		validOrder := true
-		for j := range pageUpdate {
-			if rules.containsAny(pageUpdate[j], pageUpdate[:j]) {
-				validOrder = false
-				break
-			}
-		}
-		if validOrder {
+	invalidIndexes := make([]int, 0, 100)
+	for i, pageUpdate := range pageUpdates {
+		if ok, _ := orderIsValid(pageUpdate, rules); !ok {
+			invalidIndexes = append(invalidIndexes, i)
+			pageUpdates[i] = fixWithBubble(pageUpdate, rules)
 		}
 	}
 
 	sum := 0
-	for _, pageUpdate := range pageUpdates {
-		sum += pageUpdate[len(pageUpdate)/2]
+	for _, ind := range invalidIndexes {
+		sum += pageUpdates[ind][len(pageUpdates[ind])/2]
 	}
-	fmt.Println("Part 2:", sum) // 5452
+	fmt.Println("Part 2:", sum)
 }
