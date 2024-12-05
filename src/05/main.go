@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -43,7 +43,7 @@ func (s intIntSetMap) containsAny(k int, v []int) bool {
 }
 
 func main() {
-	input, _ := ioutil.ReadFile(FILENAME)
+	input, _ := os.ReadFile(FILENAME)
 	inputLines := strings.Split(string(input), "\n")
 	rules := intIntSetMap{}
 	pageUpdates := make([][]int, 0, 100)
