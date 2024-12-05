@@ -63,15 +63,23 @@ func main() {
 			pageUpdates = append(pageUpdates, currentPageUpdates)
 		}
 	}
-	fmt.Println(rules)
 	part1(rules, pageUpdates)
 	// part2(rules, pageUpdates)
+}
+
+func orderIsValid(order []int, rules intIntSetMap) (valid bool, invalidIndex int) {
+	for i := range order {
+		if rules.containsAny(order[i], order[:i]) {
+			return false, i
+		}
+	}
+	return true, -1
 }
 
 func part1(rules intIntSetMap, pageUpdates [][]int) {
 	validIndexes := make([]int, 0, 100)
 	for i, pageUpdate := range pageUpdates {
-		if orderIsValid(pageUpdate, rules) {
+		if ok, _ := orderIsValid(pageUpdate, rules); ok {
 			validIndexes = append(validIndexes, i)
 		}
 	}
@@ -83,22 +91,10 @@ func part1(rules intIntSetMap, pageUpdates [][]int) {
 	fmt.Println("Part 1:", sum)
 }
 
-func fixWithBubble(invalidOrder []int, invalidOrderIndexes []int) (validOrder []int) {
+func fixWithBubble(invalidOrder []int) (validOrder []int) {
 	newOrder := make([]int, 0, 32)
 	copy(newOrder, invalidOrder)
-	fmt.Println("Invalid order:", invalidOrder)
-	fmt.Println("Invalid order indexes:", invalidOrderIndexes)
-
 	return newOrder
-}
-
-func orderIsValid(order []int, rules intIntSetMap) bool {
-	for i := range order {
-		if rules.containsAny(order[i], order[:i]) {
-			return false
-		}
-	}
-	return true
 }
 
 func part2(rules intIntSetMap, pageUpdates [][]int) {
