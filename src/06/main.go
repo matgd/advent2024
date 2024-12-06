@@ -5,9 +5,11 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 )
 
-const FILENAME = "tttinput.txt"
+const FILENAME = "input.txt"
 
 type Direction string
 
@@ -29,6 +31,18 @@ type mapManager struct {
 	guardLocation      [2]int
 	guardStartLocation [2]int
 	guardFacing        Direction
+}
+
+func deepCopyMapManager(mm *mapManager) *mapManager {
+	newSquares := make([][]mapSquare, len(mm.squares))
+	for i, row := range mm.squares {
+		newRow := make([]mapSquare, len(row))
+		for j, square := range row {
+			newRow[j] = square
+		}
+		newSquares[i] = newRow
+	}
+	return &mapManager{newSquares, mm.guardLocation, mm.guardStartLocation, mm.guardFacing}
 }
 
 func (mm mapManager) print() {
@@ -85,7 +99,7 @@ func (mm mapManager) visitedSquaresCoords() [][2]int {
 }
 
 func (mm mapManager) guardLooped() bool {
-	return mm.squares[mm.guardLocation[0]][mm.guardLocation[1]].timesVisited > 3
+	return mm.squares[mm.guardLocation[0]][mm.guardLocation[1]].timesVisited > 5
 }
 
 func (mm *mapManager) moveGuard(y, x int) {
@@ -181,12 +195,44 @@ func part1(mm mapManager) {
 	fmt.Println(mm.squaresVisited())
 }
 
-func part2(mm mapManager) {
+func guardCanLoop(mm mapManager, loopsForIndex []int, index int) {
 	looped := mm.guardLooped()
+	guardOutOfBounds := !mm.oneGuardTurn()
+
 	for !looped {
-		mm.oneGuardTurn()
+		if guardOutOfBounds {
+			loopsForIndex[index] = 0
+			return
+		}
+		guardOutOfBounds = !mm.oneGuardTurn()
 		looped = mm.guardLooped()
 	}
-	fmt.Println(mm.squaresVisited())
-	mm.print()
+	loopsForIndex[index] = 1
+}
+
+func part2(mm mapManager) {
+	timeStart := time.Now()
+	part1(mm)
+
+	var wg sync.WaitGroup
+	wg.Add(len(mm.visitedSquaresCoords()))
+
+	loopsForIndex := make([]int, len(mm.visitedSquaresCoords()))
+	for i, v := range mm.visitedSquaresCoords() {
+		newManager := deepCopyMapManager(&mm)
+		newManager.squares[v[0]][v[1]].isObstacle = true
+		go func() {
+			defer wg.Done()
+			guardCanLoop(*newManager, loopsForIndex, i)
+		}()
+	}
+	wg.Wait()
+
+	sum := 0
+	for _, l := range loopsForIndex {
+		sum += l
+	}
+	fmt.Println("Time:", time.Since(timeStart))
+	fmt.Println("Part 2:", sum)
+
 }
