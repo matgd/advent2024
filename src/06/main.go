@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-const FILENAME = "input.txt"
+const FILENAME = "tttinput.txt"
 
 type Direction string
 
@@ -25,9 +25,10 @@ type mapSquare struct {
 }
 
 type mapManager struct {
-	squares       [][]mapSquare
-	guardLocation [2]int
-	guardFacing   Direction
+	squares            [][]mapSquare
+	guardLocation      [2]int
+	guardStartLocation [2]int
+	guardFacing        Direction
 }
 
 func (mm mapManager) print() {
@@ -68,6 +69,23 @@ func (mm mapManager) squaresVisited() int {
 		}
 	}
 	return visited
+}
+
+// skips guard initial position
+func (mm mapManager) visitedSquaresCoords() [][2]int {
+	visitedCoords := [][2]int{}
+	for y, row := range mm.squares {
+		for x, square := range row {
+			if square.timesVisited > 0 && !(y == mm.guardStartLocation[0] && x == mm.guardStartLocation[1]) {
+				visitedCoords = append(visitedCoords, [2]int{y, x})
+			}
+		}
+	}
+	return visitedCoords
+}
+
+func (mm mapManager) guardLooped() bool {
+	return mm.squares[mm.guardLocation[0]][mm.guardLocation[1]].timesVisited > 3
 }
 
 func (mm *mapManager) moveGuard(y, x int) {
@@ -131,7 +149,7 @@ func (mm *mapManager) oneGuardTurn() bool {
 
 func main() {
 	input, _ := os.ReadFile(FILENAME)
-	manager := mapManager{[][]mapSquare{}, [2]int{-1, -1}, UP}
+	manager := mapManager{[][]mapSquare{}, [2]int{-1, -1}, [2]int{-1, -1}, UP}
 
 	for y, line := range strings.Split(string(input), "\n") {
 		if len(line) == 0 {
@@ -145,6 +163,7 @@ func main() {
 			case '^': // starts with facing up in input
 				squareRow = append(squareRow, mapSquare{1, false, true})
 				manager.guardLocation = [2]int{y, x}
+				manager.guardStartLocation = [2]int{y, x}
 			default:
 				squareRow = append(squareRow, mapSquare{0, false, false})
 			}
@@ -152,11 +171,22 @@ func main() {
 		manager.squares = append(manager.squares, squareRow)
 	}
 
-	part1(manager)
+	// part1(manager)
+	part2(manager)
 }
 
 func part1(mm mapManager) {
 	for mm.oneGuardTurn() {
 	}
 	fmt.Println(mm.squaresVisited())
+}
+
+func part2(mm mapManager) {
+	looped := mm.guardLooped()
+	for !looped {
+		mm.oneGuardTurn()
+		looped = mm.guardLooped()
+	}
+	fmt.Println(mm.squaresVisited())
+	mm.print()
 }
