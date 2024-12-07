@@ -34,9 +34,8 @@ def solution(equations: list[Equation], part: int):
                     case "*":
                         result *= equation.numbers[i + 1]
                     case "||":
-                        if part == 2:
-                            magnitude =  10**len(str(equation.numbers[i + 1]))
-                            result = result * magnitude + equation.numbers[i + 1]
+                        magnitude =  10**len(str(equation.numbers[i + 1]))
+                        result = result * magnitude + equation.numbers[i + 1]
             if result == equation.desired_result:
                 possible_desired_results.append(result)
                 break
