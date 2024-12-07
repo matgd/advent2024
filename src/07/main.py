@@ -24,7 +24,7 @@ def parse_input() -> list[Equation]:
 def solution(equations: list[Equation], part: int):
     operators = ("+", "*") if part == 1 else ("+", "*", "||")
     possible_desired_results = []
-    for eq_no, equation in enumerate(equations):
+    for equation in equations:
         for op_combination in product(operators, repeat=len(equation.numbers) - 1):
             result = equation.numbers[0]
             for i, operator in enumerate(op_combination):
