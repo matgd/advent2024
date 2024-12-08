@@ -38,30 +38,30 @@ def parse_input() -> AnthenaMap:
             locations[y].append(location)
     return AnthenaMap(locations, anthenas_locations)
 
-def calc_antinodes_coords(loc_a: Location, loc_b: Location) -> list[tuple[tuple[int, int], tuple[int, int]]]:
+def calc_antinodes_coords(loc_a: Location, loc_b: Location) -> tuple[tuple[int, int], tuple[int, int]]:
     x_diff = abs(loc_a.x - loc_b.x)
     y_diff = abs(loc_a.y - loc_b.y)
 
     if loc_a.x < loc_b.x and loc_a.y < loc_b.y:
-        return [(
+        return (
             (loc_a.y - y_diff, loc_a.x - x_diff),
             (loc_b.y + y_diff, loc_b.x + x_diff)
-        )]
+        )
     elif loc_a.x < loc_b.x and loc_a.y > loc_b.y:
-        return [(
+        return (
             (loc_a.y + y_diff, loc_a.x - x_diff),
             (loc_b.y - y_diff, loc_b.x + x_diff)
-        )]
+        )
     elif loc_a.x > loc_b.x and loc_a.y < loc_b.y:
-        return [(
+        return (
             (loc_a.y - y_diff, loc_a.x + x_diff),
             (loc_b.y + y_diff, loc_b.x - x_diff)
-        )]
+        )
     elif loc_a.x > loc_b.x and loc_a.y > loc_b.y:
-        return [(
+        return (
             (loc_a.y + y_diff, loc_a.x + x_diff),
             (loc_b.y - y_diff, loc_b.x - x_diff)
-        )]
+        )
     else:
         raise ValueError("In one line")
 
@@ -70,13 +70,12 @@ def solution(input: AnthenaMap, part: int = 1) -> None:
     for anthena, locs in input.anthenas_locations.items():
         for i, loc_a in enumerate(locs):
             for loc_b in locs[i+1:]:
-                for cac in calc_antinodes_coords(loc_a, loc_b):
-                    ((ca_y, ca_x), (cb_y, cb_x)) = cac
-                    if 0 <= ca_y < len(input.locations) and 0 <= ca_x < len(input.locations[0]):
-                        input.locations[ca_y][ca_x].antinode_of.add(anthena)
-                    if 0 <= cb_y < len(input.locations) and 0 <= cb_x < len(input.locations[0]):
-                        input.locations[cb_y][cb_x].antinode_of.add(anthena)
-    print('input. ', '#' * 70);__import__('pprint').pprint(input.list_antinodes_locs())
+                ((ca_y, ca_x), (cb_y, cb_x)) = calc_antinodes_coords(loc_a, loc_b)
+                if 0 <= ca_y < len(input.locations) and 0 <= ca_x < len(input.locations[0]):
+                    input.locations[ca_y][ca_x].antinode_of.add(anthena)
+
+                if 0 <= cb_y < len(input.locations) and 0 <= cb_x < len(input.locations[0]):
+                    input.locations[cb_y][cb_x].antinode_of.add(anthena)
 
     print("Part 1:", input.count_antinodes())
 
