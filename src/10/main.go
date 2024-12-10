@@ -41,16 +41,14 @@ func main() {
 	topology = append(topology, buildGreatWall(len(splitInput)+1))
 	fmt.Printf("topology: %v\n", topology)
 
-	part1(topology, trailheadLocations)
+	solution(topology, trailheadLocations)
 }
 
-func canReach9(topology [][]uint8, currentLocation [2]uint8, currentHeight uint8) int {
+func canReach9(topology [][]uint8, currentLocation [2]uint8, currentHeight uint8, ogLocation [2]uint8) int {
 	currY, currX := currentLocation[0], currentLocation[1]
 	for true {
-		// fmt.Println("start loc %v | curry currx %v,%v", currentLocation, currY, currX)
-		fmt.Printf("->%v,%v ", currY, currX)
 		if topology[currY][currX] == 9 {
-			fmt.Printf("start loc %v | found 9 %v,%v\n", currentLocation, currY, currX)
+			fmt.Println("grep this sorted unique toilet", ogLocation, currY, currX)
 			return 1
 		}
 		topDiff := topology[currY-1][currX] - currentHeight
@@ -70,16 +68,16 @@ func canReach9(topology [][]uint8, currentLocation [2]uint8, currentHeight uint8
 		if onesSum > 1 {
 			topFound, leftFound, rightFound, bottomFound := 0, 0, 0, 0
 			if topDiff == 1 {
-				topFound = canReach9(topology, [2]uint8{currY - 1, currX}, currentHeight+1)
+				topFound = canReach9(topology, [2]uint8{currY - 1, currX}, currentHeight+1, ogLocation)
 			}
 			if leftDiff == 1 {
-				leftFound = canReach9(topology, [2]uint8{currY, currX - 1}, currentHeight+1)
+				leftFound = canReach9(topology, [2]uint8{currY, currX - 1}, currentHeight+1, ogLocation)
 			}
 			if rightDiff == 1 {
-				rightFound = canReach9(topology, [2]uint8{currY, currX + 1}, currentHeight+1)
+				rightFound = canReach9(topology, [2]uint8{currY, currX + 1}, currentHeight+1, ogLocation)
 			}
 			if bottomDiff == 1 {
-				bottomFound = canReach9(topology, [2]uint8{currY + 1, currX}, currentHeight+1)
+				bottomFound = canReach9(topology, [2]uint8{currY + 1, currX}, currentHeight+1, ogLocation)
 			}
 			return topFound + leftFound + rightFound + bottomFound
 		} else if onesSum == 1 {
@@ -100,11 +98,11 @@ func canReach9(topology [][]uint8, currentLocation [2]uint8, currentHeight uint8
 	return 0
 }
 
-func part1(topology [][]uint8, trailheadLocations [][2]uint8) {
+func solution(topology [][]uint8, trailheadLocations [][2]uint8) {
 	hikingTrails := 0
-	fmt.Printf("trailheadLocations: %v\n", trailheadLocations)
 	for _, yx := range trailheadLocations {
-		hikingTrails += canReach9(topology, yx, 0)
+		hikingTrails += canReach9(topology, yx, 0, yx)
 	}
 	fmt.Printf("hikingTrails: %v\n", hikingTrails)
+	// part 1: go run main.go input.txt | grep this | sort | uniq | wc -l
 }
