@@ -1,7 +1,7 @@
 const input = await Bun.file(process.argv[2]).text();
 const blinks = +process.argv[3];
-var stones = input.trim().split(' ');
 const stoneState = {};
+input.trim().split(' ').forEach(s => stoneState[s] === undefined ? stoneState[s] = 1 : stoneState[s]++);
 
 function stoneDelta(stone, numberOfStones) {
     const delta = {[stone]: -numberOfStones};
@@ -20,11 +20,6 @@ function stoneDelta(stone, numberOfStones) {
     return {...delta, [(+stone * 2024) + '']: numberOfStones};
 }
 
-function updateStoneState(newStones) {
-    newStones.forEach(s => stoneState[s] === undefined ? stoneState[s] = 1 : stoneState[s]++);
-}
-
-updateStoneState(stones);
 for (let i = 0; i < blinks; i++) {
     for (let [k, v] of Object.entries(stoneState)) {
         for (let [k2, v2] of Object.entries(stoneDelta(k, +v))) {
