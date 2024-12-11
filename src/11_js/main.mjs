@@ -3,12 +3,21 @@ const blinks = +process.argv[3];
 var stones = input.trim().split(' ');
 const stoneState = {};
 
-function stoneTransform(stone) {
-    if (stone === '0')
-        return ['1'];
-    if (stone.length % 2 === 0)
-        return [stone.slice(0, stone.length / 2), (+stone.slice(stone.length / 2)) + ''];
-    return [(+stone * 2024) + ''];
+function stoneDelta(stone, numberOfStones) {
+    const delta = {[stone]: -numberOfStones};
+
+    if (stone === '0') 
+        return {...delta, '1': numberOfStones};
+
+    else if (stone.length % 2 === 0) {
+        const [s1, s2] = [stone.slice(0, stone.length / 2), (+stone.slice(stone.length / 2)) + '']
+        if (s1 === s2) 
+            return {...delta, [s1]: numberOfStones*2};
+
+        return {...delta, [s1]: numberOfStones, [s2]: numberOfStones};
+    }
+
+    return {...delta, [(+stone * 2024) + '']: numberOfStones};
 }
 
 function updateStoneState(newStones) {
@@ -17,17 +26,12 @@ function updateStoneState(newStones) {
 
 updateStoneState(stones);
 for (let i = 0; i < blinks; i++) {
-    console.log(`${i}/${blinks}`);
-    const stateClone = structuredClone(stoneState);
-    Object.keys(stateClone).forEach(s => {
-        for (let j = 0; j < stateClone[s]; j++) {
-            stoneState[s]--;
-            updateStoneState(stoneTransform(s));
+    for (let [k, v] of Object.entries(stoneState)) {
+        for (let [k2, v2] of Object.entries(stoneDelta(k, +v))) {
+            if (stoneState[k2] === undefined) stoneState[k2] = 0;
+            stoneState[k2] += v2;
         }
-    });
+    }
 }
 
-console.log(stoneState);
 console.log(Object.values(stoneState).reduce((a, b) => a + b, 0));
-
-//  Part 1 199946
