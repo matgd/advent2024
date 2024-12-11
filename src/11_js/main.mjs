@@ -10,7 +10,7 @@ function stoneDelta(stone, numberOfStones) {
         return {...delta, '1': numberOfStones};
 
     else if (stone.length % 2 === 0) {
-        const [s1, s2] = [stone.slice(0, stone.length / 2), (+stone.slice(stone.length / 2)) + '']
+        const [s1, s2] = [stone.slice(0, stone.length / 2), (+stone.slice(stone.length / 2)) + ''];
         if (s1 === s2) 
             return {...delta, [s1]: numberOfStones*2};
 
