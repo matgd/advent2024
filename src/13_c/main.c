@@ -7,17 +7,6 @@ int main(int argc, char *argv[])
     int ax[400], ay[400], bx[400], by[400], px[400], py[400];
 
     int i = 0;
-    for (; i < 400; i++)
-    {
-        ax[i] = 0;
-        ay[i] = 0;
-        bx[i] = 0;
-        by[i] = 0;
-        px[i] = 0;
-        py[i] = 0;
-    }
-
-    i = 0;
     do 
     {
         fscanf(fptr, "Button A: X+%d, Y+%d\n", &ax[i], &ay[i]);
@@ -35,7 +24,6 @@ int main(int argc, char *argv[])
         {
             for (int b = 0; b < 100; b++)
             {
-                /*printf("%d %d\n", a, b);*/
                 int posx = a * ax[j] + b * bx[j];
                 int posy = a * ay[j] + b * by[j];
                 if (posx == px[j] && posy == py[j])
