@@ -18,3 +18,5 @@ done
 # python3.12 main.py inputprogress.txt $TIMES save
 # run again and if founds false positive run as above but $TIMES + $THIS_RUN_TIMES + 1
 # add all times to have res
+#
+# I know I could do modulo stuff yada yada but I'm lazy
