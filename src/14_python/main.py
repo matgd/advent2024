@@ -65,3 +65,7 @@ for q in count_in_quadrants(robots):
     safety_factor *= q
 print("Part 1:", safety_factor)  # 224438715
 
+if len(sys.argv) > 3 and sys.argv[3] == 'save':
+    with open('inputprogress.txt', 'w') as f:
+        for r in robots:
+            f.write(f"p={r.pos[0]},{r.pos[1]} v={r.v[0]},{r.v[1]}\n")
